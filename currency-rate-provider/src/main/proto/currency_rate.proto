@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package currency;
+
+option java_multiple_files = true;
+option java_package = "com.example.currency";
+option java_outer_classname = "CurrencyRateProto";
+
+message Empty {}
+
+message RateResponse {
+  string pair = 1;
+  double rate = 2;
+  int64 timestampEpochMs = 3;
+}
+
+service CurrencyRateProvider {
+  rpc GetUsdRubRate(Empty) returns (RateResponse);
+}
