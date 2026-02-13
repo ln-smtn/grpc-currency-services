@@ -1,0 +1,6 @@
+services:
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zk
+    ports:
+      - "2181:2181"

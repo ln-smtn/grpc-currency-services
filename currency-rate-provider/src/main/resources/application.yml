@@ -1,3 +1,21 @@
+spring:
+  application:
+    name: currency-rate-provider
+
+  cloud:
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        enabled: true
+        register: true
+        root: /services
+        instance-port: ${grpc.server.port}
+        metadata:
+          grpc.port: ${grpc.server.port}
+
 grpc:
   server:
     port: 9090
+
+server:
+  port: 8081
