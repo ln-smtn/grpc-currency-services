@@ -1,5 +1,14 @@
+spring:
+  application:
+    name: rate-printer
+  cloud:
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        enabled: true
+
 grpc:
   client:
     currencyRateProvider:
-      address: "static://localhost:9090"
+      address: "discovery:///currency-rate-provider"
       negotiationType: PLAINTEXT
