@@ -81,6 +81,22 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Pact Provider -->
+        <dependency>
+            <groupId>au.com.dius.pact.provider</groupId>
+            <artifactId>junit5</artifactId>
+            <version>4.6.16</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>au.com.dius.pact.provider</groupId>
+            <artifactId>spring</artifactId>
+            <version>4.6.16</version>
+            <scope>test</scope>
+        </dependency>
+
+
+
 
 
     </dependencies>
@@ -125,6 +141,25 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>au.com.dius.pact.provider</groupId>
+                <artifactId>maven</artifactId>
+                <version>4.6.16</version>
+                <configuration>
+                    <serviceProviders>
+                        <serviceProvider>
+                            <name>currency-rate-provider</name>
+                            <protocol>http</protocol>
+                            <host>localhost</host>
+                            <port>8080</port>
+                            <pactBrokerUrl>http://localhost:9292</pactBrokerUrl>
+                            <pactBrokerUsername>pact</pactBrokerUsername>
+                            <pactBrokerPassword>pact</pactBrokerPassword>
+                        </serviceProvider>
+                    </serviceProviders>
+                </configuration>
             </plugin>
 
         </plugins>

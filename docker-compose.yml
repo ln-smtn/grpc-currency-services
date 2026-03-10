@@ -4,3 +4,32 @@ services:
     container_name: zk
     ports:
       - "2181:2181"
+
+    # === Pact Broker ===
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pactbroker
+      POSTGRES_PASSWORD: pactbroker
+      POSTGRES_DB: pactbroker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pact-broker:
+    image: pactfoundation/pact-broker:latest
+    depends_on:
+      - postgres
+    ports:
+      - "9292:9292"
+    environment:
+      PACT_BROKER_DATABASE_URL: "postgres://pactbroker:pactbroker@postgres/pactbroker"
+      PACT_BROKER_BASIC_AUTH_USERNAME: pact
+      PACT_BROKER_BASIC_AUTH_PASSWORD: pact
+      PACT_BROKER_ALLOW_PUBLIC_READ: "true"
+      PACT_BROKER_DATABASE_CONNECT_MAX_RETRIES: "5"
+      PACT_BROKER_BASE_URL: "http://localhost:9292"
+      PACT_BROKER_LOG_LEVEL: INFO
+volumes:
+  postgres-data:
