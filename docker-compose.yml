@@ -5,7 +5,7 @@ services:
     ports:
       - "2181:2181"
 
-    # === Pact Broker ===
+  # === Pact Broker ===
   postgres:
     image: postgres:16-alpine
     environment:
@@ -31,5 +31,26 @@ services:
       PACT_BROKER_DATABASE_CONNECT_MAX_RETRIES: "5"
       PACT_BROKER_BASE_URL: "http://localhost:9292"
       PACT_BROKER_LOG_LEVEL: INFO
+
+  # === Monitoring ===
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
 volumes:
   postgres-data:
