@@ -15,7 +15,19 @@ spring:
 
 grpc:
   server:
-    port: 9090
+    port: 9091
 
 server:
   port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: currency-rate-provider

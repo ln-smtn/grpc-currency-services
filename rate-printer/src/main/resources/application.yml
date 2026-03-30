@@ -12,3 +12,18 @@ grpc:
     currencyRateProvider:
       address: "discovery:///currency-rate-provider"
       negotiationType: PLAINTEXT
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: rate-printer
