@@ -3,16 +3,13 @@ package com.example.currency_rate_provider.provider;
 import com.example.currency.CurrencyRateProviderGrpc;
 import com.example.currency.Empty;
 import com.example.currency.RateResponse;
+import com.example.currency_rate_provider.service.CurrencyRateService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-
-import java.time.Instant;
-import java.util.concurrent.ThreadLocalRandom;
 
 @GrpcService
 public class CurrencyRateProviderGrpcService
@@ -20,18 +17,13 @@ public class CurrencyRateProviderGrpcService
 
     private static final Logger log = LoggerFactory.getLogger(CurrencyRateProviderGrpcService.class);
 
-    private final double base;
-    private final double maxJitter;
+    private final CurrencyRateService rateService;
     private final Counter requestCounter;
     private final Counter errorCounter;
     private final Timer requestTimer;
 
-    public CurrencyRateProviderGrpcService(
-            @Value("${currency.rate.base:92.50}") double base,
-            @Value("${currency.rate.max-jitter:1.20}") double maxJitter,
-            MeterRegistry registry) {
-        this.base = base;
-        this.maxJitter = maxJitter;
+    public CurrencyRateProviderGrpcService(CurrencyRateService rateService, MeterRegistry registry) {
+        this.rateService = rateService;
 
         this.requestCounter = Counter.builder("grpc_requests_total")
                 .description("Total gRPC requests")
@@ -59,17 +51,17 @@ public class CurrencyRateProviderGrpcService
 
         requestTimer.record(() -> {
             try {
-                double jitter = ThreadLocalRandom.current().nextDouble(-maxJitter, maxJitter);
-                double rate = round2(base + jitter);
+                double rate = rateService.getRate();
+                String pair = rateService.getPair();
+                long timestamp = rateService.getTimestamp();
 
                 RateResponse response = RateResponse.newBuilder()
-                        .setPair("USDRUB")
+                        .setPair(pair)
                         .setRate(rate)
-                        .setTimestampEpochMs(Instant.now().toEpochMilli())
+                        .setTimestampEpochMs(timestamp)
                         .build();
 
-                log.info("gRPC RESPONSE: pair={}, rate={}, timestamp={}",
-                        response.getPair(), response.getRate(), response.getTimestampEpochMs());
+                log.info("gRPC RESPONSE: pair={}, rate={}, timestamp={}", pair, rate, timestamp);
 
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
@@ -80,9 +72,5 @@ public class CurrencyRateProviderGrpcService
                         io.grpc.Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
             }
         });
-    }
-
-    private static double round2(double v) {
-        return Math.round(v * 100.0) / 100.0;
     }
 }
