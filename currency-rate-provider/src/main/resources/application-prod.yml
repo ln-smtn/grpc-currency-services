@@ -1,0 +1,16 @@
+spring:
+  cloud:
+    zookeeper:
+      connect-string: ${ZOOKEEPER_HOST}:2181
+
+grpc:
+  server:
+    port: ${GRPC_PORT}
+
+server:
+  port: ${SERVER_PORT}
+
+currency:
+  rate:
+    base: ${CURRENCY_BASE_RATE}
+    max-jitter: ${CURRENCY_MAX_JITTER}

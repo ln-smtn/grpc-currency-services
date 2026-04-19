@@ -9,6 +9,7 @@ import io.micrometer.core.instrument.Timer;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 import java.util.concurrent.ThreadLocalRandom;
@@ -19,14 +20,19 @@ public class CurrencyRateProviderGrpcService
 
     private static final Logger log = LoggerFactory.getLogger(CurrencyRateProviderGrpcService.class);
 
-    private static final double BASE = 92.50;
-    private static final double MAX_JITTER = 1.20;
-
+    private final double base;
+    private final double maxJitter;
     private final Counter requestCounter;
     private final Counter errorCounter;
     private final Timer requestTimer;
 
-    public CurrencyRateProviderGrpcService(MeterRegistry registry) {
+    public CurrencyRateProviderGrpcService(
+            @Value("${currency.rate.base:92.50}") double base,
+            @Value("${currency.rate.max-jitter:1.20}") double maxJitter,
+            MeterRegistry registry) {
+        this.base = base;
+        this.maxJitter = maxJitter;
+
         this.requestCounter = Counter.builder("grpc_requests_total")
                 .description("Total gRPC requests")
                 .tag("method", "GetUsdRubRate")
@@ -53,8 +59,8 @@ public class CurrencyRateProviderGrpcService
 
         requestTimer.record(() -> {
             try {
-                double jitter = ThreadLocalRandom.current().nextDouble(-MAX_JITTER, MAX_JITTER);
-                double rate = round2(BASE + jitter);
+                double jitter = ThreadLocalRandom.current().nextDouble(-maxJitter, maxJitter);
+                double rate = round2(base + jitter);
 
                 RateResponse response = RateResponse.newBuilder()
                         .setPair("USDRUB")

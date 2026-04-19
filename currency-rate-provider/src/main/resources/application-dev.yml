@@ -1,0 +1,16 @@
+spring:
+  cloud:
+    zookeeper:
+      connect-string: localhost:2181
+
+grpc:
+  server:
+    port: 9091
+
+server:
+  port: 8081
+
+currency:
+  rate:
+    base: 92.50
+    max-jitter: 1.20

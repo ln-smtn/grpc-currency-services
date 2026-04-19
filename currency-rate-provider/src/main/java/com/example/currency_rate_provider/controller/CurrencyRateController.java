@@ -10,13 +10,20 @@ import java.util.concurrent.ThreadLocalRandom;
 @RestController
 public class CurrencyRateController {
 
-    private static final double BASE = 92.50;
-    private static final double MAX_JITTER = 1.20;
+    private final double base;
+    private final double maxJitter;
+
+    public CurrencyRateController(
+            @org.springframework.beans.factory.annotation.Value("${currency.rate.base:92.50}") double base,
+            @org.springframework.beans.factory.annotation.Value("${currency.rate.max-jitter:1.20}") double maxJitter) {
+        this.base = base;
+        this.maxJitter = maxJitter;
+    }
 
     @GetMapping("/api/rate/usdrub")
     public Map<String, Object> getUsdRubRate() {
-        double jitter = ThreadLocalRandom.current().nextDouble(-MAX_JITTER, MAX_JITTER);
-        double rate = Math.round((BASE + jitter) * 100.0) / 100.0;
+        double jitter = ThreadLocalRandom.current().nextDouble(-maxJitter, maxJitter);
+        double rate = Math.round((base + jitter) * 100.0) / 100.0;
 
         return Map.of(
                 "pair", "USDRUB",
