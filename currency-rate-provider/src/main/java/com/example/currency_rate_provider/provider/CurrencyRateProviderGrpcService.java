@@ -18,17 +18,13 @@ public class CurrencyRateProviderGrpcService
     private static final Logger log = LoggerFactory.getLogger(CurrencyRateProviderGrpcService.class);
 
     private final CurrencyRateService rateService;
-    private final Counter requestCounter;
+    private final MeterRegistry registry;
     private final Counter errorCounter;
     private final Timer requestTimer;
 
     public CurrencyRateProviderGrpcService(CurrencyRateService rateService, MeterRegistry registry) {
         this.rateService = rateService;
-
-        this.requestCounter = Counter.builder("grpc_requests_total")
-                .description("Total gRPC requests")
-                .tag("method", "GetUsdRubRate")
-                .register(registry);
+        this.registry = registry;
 
         this.errorCounter = Counter.builder("grpc_errors_total")
                 .description("Total gRPC 500 errors")
@@ -46,8 +42,19 @@ public class CurrencyRateProviderGrpcService
     public void getUsdRubRate(Empty request,
                               io.grpc.stub.StreamObserver<RateResponse> responseObserver) {
 
-        requestCounter.increment();
-        log.info("gRPC REQUEST: GetUsdRubRate from client");
+        String clientName = ClientNameInterceptor.CLIENT_NAME_CTX.get();
+        if (clientName == null) {
+            clientName = "unknown";
+        }
+
+        Counter.builder("grpc_requests_total")
+                .description("Total gRPC requests")
+                .tag("method", "GetUsdRubRate")
+                .tag("client", clientName)
+                .register(registry)
+                .increment();
+
+        log.info("gRPC REQUEST: GetUsdRubRate from client={}", clientName);
 
         requestTimer.record(() -> {
             try {
