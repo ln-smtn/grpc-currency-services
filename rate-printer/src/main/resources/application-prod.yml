@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    zookeeper:
+      connect-string: ${ZOOKEEPER_HOST}:2181
+
+server:
+  port: ${SERVER_PORT}
